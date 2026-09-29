@@ -1,0 +1,627 @@
+{
+  "DEMO-STAGE1": {
+    "alert_id": "DEMO-STAGE1",
+    "llm_verdict": "NEEDS_HUMAN",
+    "final_verdict": "NEEDS_HUMAN",
+    "confidence": 0.92,
+    "severity": "MEDIUM",
+    "reasoning": "The alert matches a Nessus scan pattern (tool Nessus, timing 02:00\u201106:00 UTC), but the source IP 10.20.5.44 does not match the authorized scanner IP 10.20.5.88 documented in memory. Memory 5 explicitly states that alerts resembling Nessus scans require human review when the source IP, timing, or authentication outcome deviates from the authorized pattern. Therefore an automatic closure is not justified.",
+    "key_evidence": [
+      "Source IP: 10.20.5.44 (unauthorized for Nessus scans)",
+      "Tool: Nessus",
+      "Timestamp within authorized scan window (02:00\u201106:00 UTC)",
+      "Multiple rapid SSH connection attempts to port 22"
+    ],
+    "recommended_actions": [
+      "Verify whether IP 10.20.5.44 is an authorized scanning host",
+      "Check authentication logs on web-prod-03 for any successful logins",
+      "If IP is unauthorized, consider blocking or quarantining the source",
+      "Document findings and, if malicious activity is confirmed, escalate to incident response"
+    ],
+    "memory_matches": [
+      {
+        "id": "96fa3408-922a-4f64-932c-255b880ad4da",
+        "text": "SSH brute force attack occurred on production server web-prod-03 from external IP 185.23.77.199. | When: 2026-09-26 | Involving: Priya Nair (Analyst) | Unauthorized external IP performed 89 failed attempts followed by a successful authentication at 02:01 UTC.",
+        "relevance": 0.0,
+        "verdict": null,
+        "analyst": null,
+        "date": null,
+        "tags": [
+          "ssh",
+          "production",
+          "brute-force",
+          "override-memory",
+          "external-ip",
+          "incident-memory",
+          "true-positive"
+        ]
+      },
+      {
+        "id": "cf70dfbe-f125-4f30-95f3-50e3953dbfda",
+        "text": "Authorized Nessus scans originate from the 10.20.5.x subnet (specifically 10.20.5.88) on Mondays and Wednesdays between 02:00 and 06:00 UTC, target production and staging assets, test connectivity without authentication, and exhibit Nessus TCP fingerprints.",
+        "relevance": 0.0,
+        "verdict": null,
+        "analyst": null,
+        "date": null,
+        "tags": [
+          "ssh",
+          "pattern-learning",
+          "scanner-vs-attack",
+          "environment-memory",
+          "nessus"
+        ]
+      },
+      {
+        "id": "2aca80c2-7e14-43e3-8dfc-41b745ddcc66",
+        "text": "Authorized Nessus scans originate from 10.20.5.x subnet, specifically 10.20.5.88, on Mondays and Wednesdays between 02:00 and 06:00 UTC. | When: Mondays and Wednesdays, 02:00-06:00 UTC",
+        "relevance": 0.0,
+        "verdict": null,
+        "analyst": null,
+        "date": null,
+        "tags": [
+          "ssh",
+          "pattern-learning",
+          "scanner-vs-attack",
+          "environment-memory",
+          "nessus"
+        ]
+      },
+      {
+        "id": "ade23de3-fc1e-4df7-81cb-703af9db485a",
+        "text": "An SSH brute force attack occurred on production server web-prod-03 from IP 185.23.77.199 on 2026-09-26, involving 89 failed attempts and one successful authentication.",
+        "relevance": 0.0,
+        "verdict": null,
+        "analyst": null,
+        "date": null,
+        "tags": [
+          "ssh",
+          "production",
+          "brute-force",
+          "override-memory",
+          "external-ip",
+          "incident-memory",
+          "true-positive"
+        ]
+      },
+      {
+        "id": "2a8ee72c-375a-44f0-9833-92b4561500c4",
+        "text": "Security alerts resembling Nessus scans require human review if authentication is successful or if the source IP, timing, or authentication outcome deviate from authorized patterns.",
+        "relevance": 0.0,
+        "verdict": null,
+        "analyst": null,
+        "date": null,
+        "tags": [
+          "ssh",
+          "pattern-learning",
+          "scanner-vs-attack",
+          "environment-memory",
+          "nessus"
+        ]
+      }
+    ],
+    "memory_ids_used": [
+      "cf70dfbe-f125-4f30-95f3-50e3953dbfda",
+      "2a8ee72c-375a-44f0-9833-92b4561500c4"
+    ],
+    "memory_summary": [
+      "Authorized Nessus scans originate from 10.20.5.88 in the 10.20.5.x subnet on Mondays and Wednesdays between 02:00\u201106:00 UTC",
+      "Security alerts resembling Nessus scans require human review if source IP, timing, or authentication outcome deviates from authorized patterns"
+    ],
+    "guardrails": {
+      "fired": [
+        "RULE_4: Conflicting memories (both benign and malicious patterns found) \u2014 requires human review"
+      ],
+      "overridden": false,
+      "original_verdict": "NEEDS_HUMAN",
+      "final_verdict": "NEEDS_HUMAN"
+    },
+    "use_memory": true,
+    "pipeline_steps": [
+      "Analyzing alert",
+      "Searching organizational memory",
+      "5 relevant memories found",
+      "Comparing historical decisions",
+      "Guardrail check",
+      "Recommendation ready"
+    ]
+  },
+  "DEMO-STAGE2": {
+    "alert_id": "DEMO-STAGE2",
+    "llm_verdict": "AUTO_CLOSE",
+    "final_verdict": "AUTO_CLOSE",
+    "confidence": 0.96,
+    "severity": "MEDIUM",
+    "reasoning": "The alert matches a known authorized Nessus scan. Memory 3 confirms that the Nessus scanner at 10.20.5.44 is authorized to run scheduled scans of all production assets every Monday at 02:00\u202fUTC. The alert timestamp is 2026-10-05T02:00:00Z, which is a Monday at the authorized time. The source IP, destination asset, port, and Nessus fingerprint all align with the authorized pattern. Memory 5 further records a prior similar alert (DEMO\u2011STAGE1) that was identified as a false positive caused by the same scanner, reinforcing the benign nature. Therefore the alert can be safely auto\u2011closed.",
+    "key_evidence": [
+      "Source IP 10.20.5.44",
+      "Tool Nessus",
+      "Timestamp Monday 02:00\u202fUTC",
+      "Destination asset web-prod-03 on port 22",
+      "Nessus TCP fingerprint detected",
+      "47 connection attempts in 5 minutes"
+    ],
+    "recommended_actions": [
+      "Close the alert as a false positive",
+      "Document the auto\u2011closure in the ticketing system",
+      "Continue routine monitoring of the asset",
+      "Ensure the Nessus scan schedule remains unchanged"
+    ],
+    "memory_matches": [
+      {
+        "id": "cf70dfbe-f125-4f30-95f3-50e3953dbfda",
+        "text": "Authorized Nessus scans originate from the 10.20.5.x subnet (specifically 10.20.5.88) on Mondays and Wednesdays between 02:00 and 06:00 UTC, target production and staging assets, test connectivity without authentication, and exhibit Nessus TCP fingerprints.",
+        "relevance": 0.0,
+        "verdict": null,
+        "analyst": null,
+        "date": null,
+        "tags": [
+          "ssh",
+          "pattern-learning",
+          "scanner-vs-attack",
+          "environment-memory",
+          "nessus"
+        ]
+      },
+      {
+        "id": "2aca80c2-7e14-43e3-8dfc-41b745ddcc66",
+        "text": "Authorized Nessus scans originate from 10.20.5.x subnet, specifically 10.20.5.88, on Mondays and Wednesdays between 02:00 and 06:00 UTC. | When: Mondays and Wednesdays, 02:00-06:00 UTC",
+        "relevance": 0.0,
+        "verdict": null,
+        "analyst": null,
+        "date": null,
+        "tags": [
+          "ssh",
+          "pattern-learning",
+          "scanner-vs-attack",
+          "environment-memory",
+          "nessus"
+        ]
+      },
+      {
+        "id": "676b39a9-ce9e-4df6-aef9-40314fe02355",
+        "text": "The Nessus vulnerability scanner at 10.20.5.44 is authorized to perform scheduled scans of all production assets every Monday at 02:00 UTC.",
+        "relevance": 0.0,
+        "verdict": null,
+        "analyst": null,
+        "date": null,
+        "tags": [
+          "analyst-feedback",
+          "override-memory",
+          "false-positive"
+        ]
+      },
+      {
+        "id": "2a8ee72c-375a-44f0-9833-92b4561500c4",
+        "text": "Security alerts resembling Nessus scans require human review if authentication is successful or if the source IP, timing, or authentication outcome deviate from authorized patterns.",
+        "relevance": 0.0,
+        "verdict": null,
+        "analyst": null,
+        "date": null,
+        "tags": [
+          "ssh",
+          "pattern-learning",
+          "scanner-vs-attack",
+          "environment-memory",
+          "nessus"
+        ]
+      },
+      {
+        "id": "15deb0a5-0010-45a8-8a48-d5afd6f73d8d",
+        "text": "Priya Nair identified alert DEMO-STAGE1 as a false positive, overriding the AI's recommendation of NEEDS_HUMAN. | When: 2026-09-29 | Involving: Priya Nair | The activity was caused by the authorized Nessus vulnerability scanner at 10.20.5.44.",
+        "relevance": 0.0,
+        "verdict": null,
+        "analyst": null,
+        "date": null,
+        "tags": [
+          "analyst-feedback",
+          "override-memory",
+          "false-positive"
+        ]
+      }
+    ],
+    "memory_ids_used": [
+      "676b39a9-ce9e-4df6-aef9-40314fe02355",
+      "15deb0a5-0010-45a8-8a48-d5afd6f73d8d"
+    ],
+    "memory_summary": [
+      "Memory 3: Authorized Nessus scanner at 10.20.5.44 runs scheduled scans of all production assets every Monday at 02:00\u202fUTC.",
+      "Memory 5: Analyst feedback indicating a prior similar alert was a false positive caused by the authorized Nessus scanner at 10.20.5.44."
+    ],
+    "guardrails": {
+      "fired": [],
+      "overridden": false,
+      "original_verdict": "AUTO_CLOSE",
+      "final_verdict": "AUTO_CLOSE"
+    },
+    "use_memory": true,
+    "pipeline_steps": [
+      "Analyzing alert",
+      "Searching organizational memory",
+      "5 relevant memories found",
+      "Comparing historical decisions",
+      "Guardrail check",
+      "Recommendation ready"
+    ]
+  },
+  "DEMO-STAGE3": {
+    "alert_id": "DEMO-STAGE3",
+    "llm_verdict": "ESCALATE",
+    "final_verdict": "NEEDS_HUMAN",
+    "confidence": 0.95,
+    "severity": "HIGH",
+    "reasoning": "The alert shows an external IP performing a rapid SSH scan (120 attempts) and achieving a successful authentication on production server web-prod-03. This pattern matches previously recorded brute\u2011force incidents (Memory 1 and Memory 2) on the same asset, which were confirmed true\u2011positive compromises. No authorized scanner is known for this source IP, and the successful login indicates a breach. Therefore the alert must be escalated for immediate incident response.",
+    "key_evidence": [
+      "Source IP 185.23.42.77 external and unknown",
+      "120 rapid SSH connection attempts to port 22",
+      "Successful SSH authentication at 03:14 UTC",
+      "Target asset web-prod-03 in production",
+      "Severity HIGH"
+    ],
+    "recommended_actions": [
+      "Block source IP 185.23.42.77 at perimeter firewall",
+      "Disable the compromised SSH account and rotate credentials",
+      "Conduct forensic analysis on web-prod-03 for potential backdoors",
+      "Review and tighten SSH access controls (e.g., MFA, key\u2011based auth)",
+      "Escalate to Incident Response team for full investigation"
+    ],
+    "memory_matches": [
+      {
+        "id": "96fa3408-922a-4f64-932c-255b880ad4da",
+        "text": "SSH brute force attack occurred on production server web-prod-03 from external IP 185.23.77.199. | When: 2026-09-26 | Involving: Priya Nair (Analyst) | Unauthorized external IP performed 89 failed attempts followed by a successful authentication at 02:01 UTC.",
+        "relevance": 0.0,
+        "verdict": null,
+        "analyst": null,
+        "date": null,
+        "tags": [
+          "ssh",
+          "production",
+          "brute-force",
+          "override-memory",
+          "external-ip",
+          "incident-memory",
+          "true-positive"
+        ]
+      },
+      {
+        "id": "ade23de3-fc1e-4df7-81cb-703af9db485a",
+        "text": "An SSH brute force attack occurred on production server web-prod-03 from IP 185.23.77.199 on 2026-09-26, involving 89 failed attempts and one successful authentication.",
+        "relevance": 0.0,
+        "verdict": null,
+        "analyst": null,
+        "date": null,
+        "tags": [
+          "ssh",
+          "production",
+          "brute-force",
+          "override-memory",
+          "external-ip",
+          "incident-memory",
+          "true-positive"
+        ]
+      },
+      {
+        "id": "9086335d-527f-4fa6-8001-582a321b4caf",
+        "text": "Production server web-prod-06 was compromised via an outbound TCP connection to 45.142.200.5:4444, indicating a coordinated C2 callback. | When: 2026-09-24 | Involving: Marcus Chen (analyst) | Production web server processes should never initiate outbound connections.",
+        "relevance": 0.0,
+        "verdict": null,
+        "analyst": null,
+        "date": null,
+        "tags": [
+          "c2",
+          "incident-memory",
+          "webshell",
+          "override-memory",
+          "true-positive",
+          "port-4444",
+          "production"
+        ]
+      },
+      {
+        "id": "cc81bc55-6d93-4953-8bf1-b45050d1f498",
+        "text": "On 2026-09-24, analyst Priya Nair identified a security compromise on web-prod-05 involving a webshell in /var/www/html/upload/ and malicious outbound TCP traffic to 185.23.44.12:4444, which is indicative of a reverse shell.",
+        "relevance": 0.0,
+        "verdict": null,
+        "analyst": null,
+        "date": null,
+        "tags": [
+          "true-positive",
+          "incident-memory",
+          "production",
+          "webshell",
+          "c2",
+          "port-4444"
+        ]
+      },
+      {
+        "id": "8e67a67e-6291-4241-accf-e6fc8ff8a5c2",
+        "text": "Production server web-prod-06 was compromised on 2026-09-24 via an outbound TCP connection to 45.142.200.5:4444, indicating a coordinated C2 callback.",
+        "relevance": 0.0,
+        "verdict": null,
+        "analyst": null,
+        "date": null,
+        "tags": [
+          "c2",
+          "incident-memory",
+          "webshell",
+          "override-memory",
+          "true-positive",
+          "port-4444",
+          "production"
+        ]
+      }
+    ],
+    "memory_ids_used": [
+      "96fa3408-922a-4f64-932c-255b880ad4da",
+      "ade23de3-fc1e-4df7-81cb-703af9db485a"
+    ],
+    "memory_summary": [
+      "Memory 1: Prior confirmed brute\u2011force attack on web-prod-03 from external IP 185.23.77.199 with 89 failed attempts and a successful login (true\u2011positive).",
+      "Memory 2: Duplicate record of the same brute\u2011force incident on web-prod-03, confirming malicious activity."
+    ],
+    "guardrails": {
+      "fired": [
+        "RULE_4: Conflicting memories (both benign and malicious patterns found) \u2014 requires human review",
+        "RULE_5: Evidence mismatch detected \u2014 key fields differ from relied-upon benign memories. Details: Source IP mismatch: recalled memories describe authorized internal scanning (e.g. 10.20.5.x), but alert originates from external IP '185.23.42.77'."
+      ],
+      "overridden": true,
+      "original_verdict": "ESCALATE",
+      "final_verdict": "NEEDS_HUMAN"
+    },
+    "use_memory": true,
+    "pipeline_steps": [
+      "Analyzing alert",
+      "Searching organizational memory",
+      "5 relevant memories found",
+      "Comparing historical decisions",
+      "Guardrail check",
+      "Recommendation ready"
+    ]
+  },
+  "ALT-001": {
+    "alert_id": "ALT-001",
+    "llm_verdict": "NEEDS_HUMAN",
+    "final_verdict": "NEEDS_HUMAN",
+    "confidence": 0.92,
+    "severity": "MEDIUM",
+    "reasoning": "The alert matches a known authorized Nessus scan pattern in source IP (10.20.5.88) and tool, but the timestamp falls on a Tuesday (2026-09-22) rather than the authorized days (Monday or Wednesday). Memory 3 explicitly requires human review when timing deviates from the authorized schedule. Therefore automatic closure is not justified.",
+    "key_evidence": [
+      "Source IP 10.20.5.88 matches authorized Nessus scanner subnet",
+      "Tool identified as Nessus",
+      "Timestamp 2026-09-22T02:03:11Z is a Tuesday, outside authorized Monday/Wednesday window"
+    ],
+    "recommended_actions": [
+      "Escalate to a SOC analyst for manual verification of the scan schedule",
+      "Confirm whether an unscheduled Nessus scan was intentionally run",
+      "Check for any unexpected activity on the target host during the scan window",
+      "Update scheduling documentation if this scan is legitimate"
+    ],
+    "memory_matches": [
+      {
+        "id": "2aca80c2-7e14-43e3-8dfc-41b745ddcc66",
+        "text": "Authorized Nessus scans originate from 10.20.5.x subnet, specifically 10.20.5.88, on Mondays and Wednesdays between 02:00 and 06:00 UTC. | When: Mondays and Wednesdays, 02:00-06:00 UTC",
+        "relevance": 0.0,
+        "verdict": null,
+        "analyst": null,
+        "date": null,
+        "tags": [
+          "ssh",
+          "pattern-learning",
+          "scanner-vs-attack",
+          "environment-memory",
+          "nessus"
+        ]
+      },
+      {
+        "id": "cf70dfbe-f125-4f30-95f3-50e3953dbfda",
+        "text": "Authorized Nessus scans originate from the 10.20.5.x subnet (specifically 10.20.5.88) on Mondays and Wednesdays between 02:00 and 06:00 UTC, target production and staging assets, test connectivity without authentication, and exhibit Nessus TCP fingerprints.",
+        "relevance": 0.0,
+        "verdict": null,
+        "analyst": null,
+        "date": null,
+        "tags": [
+          "ssh",
+          "pattern-learning",
+          "scanner-vs-attack",
+          "environment-memory",
+          "nessus"
+        ]
+      },
+      {
+        "id": "2a8ee72c-375a-44f0-9833-92b4561500c4",
+        "text": "Security alerts resembling Nessus scans require human review if authentication is successful or if the source IP, timing, or authentication outcome deviate from authorized patterns.",
+        "relevance": 0.0,
+        "verdict": null,
+        "analyst": null,
+        "date": null,
+        "tags": [
+          "ssh",
+          "pattern-learning",
+          "scanner-vs-attack",
+          "environment-memory",
+          "nessus"
+        ]
+      },
+      {
+        "id": "96fa3408-922a-4f64-932c-255b880ad4da",
+        "text": "SSH brute force attack occurred on production server web-prod-03 from external IP 185.23.77.199. | When: 2026-09-26 | Involving: Priya Nair (Analyst) | Unauthorized external IP performed 89 failed attempts followed by a successful authentication at 02:01 UTC.",
+        "relevance": 0.0,
+        "verdict": null,
+        "analyst": null,
+        "date": null,
+        "tags": [
+          "ssh",
+          "production",
+          "brute-force",
+          "override-memory",
+          "external-ip",
+          "incident-memory",
+          "true-positive"
+        ]
+      },
+      {
+        "id": "ade23de3-fc1e-4df7-81cb-703af9db485a",
+        "text": "An SSH brute force attack occurred on production server web-prod-03 from IP 185.23.77.199 on 2026-09-26, involving 89 failed attempts and one successful authentication.",
+        "relevance": 0.0,
+        "verdict": null,
+        "analyst": null,
+        "date": null,
+        "tags": [
+          "ssh",
+          "production",
+          "brute-force",
+          "override-memory",
+          "external-ip",
+          "incident-memory",
+          "true-positive"
+        ]
+      }
+    ],
+    "memory_ids_used": [
+      "2aca80c2-7e14-43e3-8dfc-41b745ddcc66",
+      "cf70dfbe-f125-4f30-95f3-50e3953dbfda",
+      "2a8ee72c-375a-44f0-9833-92b4561500c4"
+    ],
+    "memory_summary": [
+      "Authorized Nessus scans originate from 10.20.5.88 on Mondays and Wednesdays 02:00-06:00 UTC",
+      "Same authorized schedule reiterated in a second memory entry",
+      "Guidance that scans deviating in timing require human review"
+    ],
+    "guardrails": {
+      "fired": [],
+      "overridden": false,
+      "original_verdict": "NEEDS_HUMAN",
+      "final_verdict": "NEEDS_HUMAN"
+    },
+    "use_memory": true,
+    "pipeline_steps": [
+      "Analyzing alert",
+      "Searching organizational memory",
+      "5 relevant memories found",
+      "Comparing historical decisions",
+      "Guardrail check",
+      "Recommendation ready"
+    ]
+  },
+  "ALT-003": {
+    "alert_id": "ALT-003",
+    "llm_verdict": "NEEDS_HUMAN",
+    "final_verdict": "NEEDS_HUMAN",
+    "confidence": 0.86,
+    "severity": "MEDIUM",
+    "reasoning": "The alert matches several authorized Nessus scan characteristics (source IP 10.20.5.88, tool Nessus, production asset, Nessus TCP fingerprint) as described in Memories 1, 2, and 4. However, the scan occurred at 14:32 UTC, which is outside the authorized window of 02:00\u201106:00 UTC on Mondays and Wednesdays (Memory 1 & 2). Memory 3 explicitly states that deviations in timing (or other parameters) require human review. Therefore the alert cannot be auto\u2011closed and should be escalated to a human analyst for verification.",
+    "key_evidence": [
+      "Source IP 10.20.5.88 matches authorized subnet",
+      "Tool identified as Nessus",
+      "Destination asset is production (api-prod-02)",
+      "Timestamp 2026-09-23T14:32:07Z is outside authorized 02:00\u201106:00 window"
+    ],
+    "recommended_actions": [
+      "Assign a SOC analyst to verify if an out\u2011of\u2011schedule scan was intentionally triggered",
+      "Check scheduling configuration for Nessus scanner at 10.20.5.88",
+      "If unauthorized, block the source IP or adjust firewall rules",
+      "Document findings and update scan schedule if needed"
+    ],
+    "memory_matches": [
+      {
+        "id": "cf70dfbe-f125-4f30-95f3-50e3953dbfda",
+        "text": "Authorized Nessus scans originate from the 10.20.5.x subnet (specifically 10.20.5.88) on Mondays and Wednesdays between 02:00 and 06:00 UTC, target production and staging assets, test connectivity without authentication, and exhibit Nessus TCP fingerprints.",
+        "relevance": 0.0,
+        "verdict": null,
+        "analyst": null,
+        "date": null,
+        "tags": [
+          "ssh",
+          "pattern-learning",
+          "scanner-vs-attack",
+          "environment-memory",
+          "nessus"
+        ]
+      },
+      {
+        "id": "2aca80c2-7e14-43e3-8dfc-41b745ddcc66",
+        "text": "Authorized Nessus scans originate from 10.20.5.x subnet, specifically 10.20.5.88, on Mondays and Wednesdays between 02:00 and 06:00 UTC. | When: Mondays and Wednesdays, 02:00-06:00 UTC",
+        "relevance": 0.0,
+        "verdict": null,
+        "analyst": null,
+        "date": null,
+        "tags": [
+          "ssh",
+          "pattern-learning",
+          "scanner-vs-attack",
+          "environment-memory",
+          "nessus"
+        ]
+      },
+      {
+        "id": "2a8ee72c-375a-44f0-9833-92b4561500c4",
+        "text": "Security alerts resembling Nessus scans require human review if authentication is successful or if the source IP, timing, or authentication outcome deviate from authorized patterns.",
+        "relevance": 0.0,
+        "verdict": null,
+        "analyst": null,
+        "date": null,
+        "tags": [
+          "ssh",
+          "pattern-learning",
+          "scanner-vs-attack",
+          "environment-memory",
+          "nessus"
+        ]
+      },
+      {
+        "id": "57f9697d-046f-421f-be05-7115d8f0c67f",
+        "text": "Authorized Nessus scans target production and staging assets, test connectivity without authentication, and exhibit Nessus TCP fingerprints.",
+        "relevance": 0.0,
+        "verdict": null,
+        "analyst": null,
+        "date": null,
+        "tags": [
+          "ssh",
+          "pattern-learning",
+          "scanner-vs-attack",
+          "environment-memory",
+          "nessus"
+        ]
+      },
+      {
+        "id": "676b39a9-ce9e-4df6-aef9-40314fe02355",
+        "text": "The Nessus vulnerability scanner at 10.20.5.44 is authorized to perform scheduled scans of all production assets every Monday at 02:00 UTC.",
+        "relevance": 0.0,
+        "verdict": null,
+        "analyst": null,
+        "date": null,
+        "tags": [
+          "analyst-feedback",
+          "override-memory",
+          "false-positive"
+        ]
+      }
+    ],
+    "memory_ids_used": [
+      "cf70dfbe-f125-4f30-95f3-50e3953dbfda",
+      "2aca80c2-7e14-43e3-8dfc-41b745ddcc66",
+      "2a8ee72c-375a-44f0-9833-92b4561500c4",
+      "57f9697d-046f-421f-be05-7115d8f0c67f"
+    ],
+    "memory_summary": [
+      "Authorized Nessus scans originate from 10.20.5.x (specifically .88) on Mon/Wed 02:00\u201106:00 UTC targeting production assets (Mem 1)",
+      "Same authorized schedule and IP details (Mem 2)",
+      "Deviations in timing or authentication require human review (Mem 3)",
+      "Authorized scans test connectivity without authentication and show Nessus fingerprints (Mem 4)"
+    ],
+    "guardrails": {
+      "fired": [],
+      "overridden": false,
+      "original_verdict": "NEEDS_HUMAN",
+      "final_verdict": "NEEDS_HUMAN"
+    },
+    "use_memory": true,
+    "pipeline_steps": [
+      "Analyzing alert",
+      "Searching organizational memory",
+      "5 relevant memories found",
+      "Comparing historical decisions",
+      "Guardrail check",
+      "Recommendation ready"
+    ]
+  }
+}

@@ -1,0 +1,96 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #06080e;
+  --foreground: #f3f4f6;
+  --panel-bg: #0c101a;
+  --border-color: #1c2638;
+}
+
+body {
+  color: var(--foreground);
+  background-color: var(--background);
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 100% 50%, rgba(168, 85, 247, 0.05) 0%, transparent 40%),
+    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 32px 32px, 32px 32px;
+  background-position: 0 0, 0 0, -1px -1px, -1px -1px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* Custom Sleek Cyber Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #06080e;
+}
+::-webkit-scrollbar-thumb {
+  background: #1c2638;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #2a374f;
+}
+
+/* Glassmorphism & Cyber Card utilities */
+.cyber-card {
+  background: linear-gradient(135deg, rgba(12, 16, 26, 0.85) 0%, rgba(17, 24, 39, 0.75) 100%);
+  border: 1px solid #1c2638;
+  backdrop-filter: blur(8px);
+}
+
+.cyber-card-interactive {
+  background: linear-gradient(135deg, rgba(12, 16, 26, 0.85) 0%, rgba(17, 24, 39, 0.75) 100%);
+  border: 1px solid #1c2638;
+  backdrop-filter: blur(8px);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cyber-card-interactive:hover {
+  border-color: rgba(56, 189, 248, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.5), 0 0 15px -3px rgba(56, 189, 248, 0.15);
+}
+
+.cyber-pill {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(17, 24, 39, 0.6);
+  backdrop-filter: blur(4px);
+}
+
+/* Scanning Pulse and Glow Animations */
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.96); }
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes scanline-glow {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(1000%); }
+}
+
+.scanline {
+  position: relative;
+  overflow: hidden;
+}
+
+.scanline::after {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.5), transparent);
+  animation: scanline-glow 8s linear infinite;
+  pointer-events: none;
+}

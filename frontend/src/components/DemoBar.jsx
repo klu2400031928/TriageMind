@@ -3,12 +3,7 @@
 import React from "react";
 import { Play, Sparkles, AlertTriangle, ShieldCheck, ArrowRight, BookOpen, Layers } from "lucide-react";
 
-interface DemoBarProps {
-  onRunStage: (stage: 1 | 2 | 3 | 4) => void;
-  activeStage?: number;
-}
-
-export function DemoBar({ onRunStage, activeStage }: DemoBarProps) {
+export function DemoBar({ onRunStage, activeStage }) {
   const stages = [
     {
       id: 1,
@@ -79,7 +74,7 @@ export function DemoBar({ onRunStage, activeStage }: DemoBarProps) {
             return (
               <React.Fragment key={stage.id}>
                 <button
-                  onClick={() => onRunStage(stage.id as 1 | 2 | 3 | 4)}
+                  onClick={() => onRunStage(stage.id)}
                   className={`group relative flex items-center space-x-2 px-3 py-1.5 rounded-lg text-xs font-mono transition-all duration-200 border ${
                     isActive
                       ? stage.activeBg
@@ -99,11 +94,15 @@ export function DemoBar({ onRunStage, activeStage }: DemoBarProps) {
                     }`}
                   />
                   <div className="text-left">
-                    <span className="font-semibold block leading-tight">{stage.title}</span>
+                    <div className="font-bold uppercase leading-none">{stage.title}</div>
+                    <div className="text-[9px] text-gray-400 hidden xl:block leading-none mt-0.5">
+                      {stage.subtitle}
+                    </div>
                   </div>
                 </button>
+
                 {idx < stages.length - 1 && (
-                  <ArrowRight className="w-3 h-3 text-gray-700 hidden sm:inline shrink-0" />
+                  <ArrowRight className="w-3 h-3 text-gray-600 hidden sm:block" />
                 )}
               </React.Fragment>
             );

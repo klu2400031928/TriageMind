@@ -8,21 +8,16 @@ import { AlertQueueView } from "@/components/AlertQueueView";
 import { MemoryBankView } from "@/components/MemoryBankView";
 import { LearningView } from "@/components/LearningView";
 import { AlertDetailModal } from "@/components/AlertDetailModal";
-import { Alert, LearningStats } from "@/types";
 import { getAlerts, getHealth, getLearningStats, resetDemo } from "@/lib/api";
 
-interface CommandCenterProps {
-  initialTab?: "dashboard" | "alerts" | "memory" | "learning";
-}
-
-export function CommandCenter({ initialTab = "dashboard" }: CommandCenterProps) {
-  const [activeTab, setActiveTab] = useState<"dashboard" | "alerts" | "memory" | "learning">(initialTab);
-  const [alerts, setAlerts] = useState<Alert[]>([]);
-  const [stats, setStats] = useState<LearningStats | null>(null);
+export function CommandCenter({ initialTab = "dashboard" }) {
+  const [activeTab, setActiveTab] = useState(initialTab);
+  const [alerts, setAlerts] = useState([]);
+  const [stats, setStats] = useState(null);
   const [online, setOnline] = useState(false);
-  const [selectedAlert, setSelectedAlert] = useState<Alert | null>(null);
+  const [selectedAlert, setSelectedAlert] = useState(null);
   const [resetting, setResetting] = useState(false);
-  const [activeDemoStage, setActiveDemoStage] = useState<number | undefined>();
+  const [activeDemoStage, setActiveDemoStage] = useState(undefined);
 
   useEffect(() => {
     setActiveTab(initialTab);
@@ -64,11 +59,11 @@ export function CommandCenter({ initialTab = "dashboard" }: CommandCenterProps) 
   }
 
   // Demo Stage quick runners
-  async function handleRunStage(stage: 1 | 2 | 3 | 4) {
+  async function handleRunStage(stage) {
     setActiveDemoStage(stage);
     if (stage === 1) {
       // Stage 1: Cold start (Unknown Nessus scanner IP 10.20.5.44)
-      const stage1Alert: Alert = {
+      const stage1Alert = {
         id: "DEMO-STAGE1",
         timestamp: "2026-09-28T02:00:00Z",
         source_ip: "10.20.5.44",
@@ -90,7 +85,7 @@ export function CommandCenter({ initialTab = "dashboard" }: CommandCenterProps) 
       setSelectedAlert(stage1Alert);
     } else if (stage === 2) {
       // Stage 2: Analyst Teaches the system
-      const stage2Alert: Alert = {
+      const stage2Alert = {
         id: "DEMO-STAGE1",
         timestamp: "2026-09-28T02:00:00Z",
         source_ip: "10.20.5.44",
@@ -107,16 +102,16 @@ export function CommandCenter({ initialTab = "dashboard" }: CommandCenterProps) 
         tool: "Nessus",
         aws_region: null,
         cloudtrail_event: null,
-        description: "SSH scanning from 10.20.5.44 to web-prod-03 port 22. Cold start alert ready for analyst override: '10.20.5.44 is authorized Nessus scanner every Monday 02:00 UTC.'",
+        description: "SSH scanning from 10.20.5.44 to web-prod-03 port 22. Scheduled Monday Nessus scan.",
       };
       setSelectedAlert(stage2Alert);
     } else if (stage === 3) {
-      // Stage 3: Adaptive triage (Recalls newly learned memory -> AUTO_CLOSE)
-      const stage3Alert: Alert = {
+      // Stage 3: Auto-close after learning
+      const stage3Alert = {
         id: "DEMO-STAGE2",
-        timestamp: "2026-10-05T02:00:00Z",
+        timestamp: "2026-09-28T02:00:00Z",
         source_ip: "10.20.5.44",
-        source_port: 56100,
+        source_port: 56000,
         destination_ip: "10.10.1.10",
         destination_port: 22,
         hostname: "web-prod-03",
@@ -129,36 +124,48 @@ export function CommandCenter({ initialTab = "dashboard" }: CommandCenterProps) 
         tool: "Nessus",
         aws_region: null,
         cloudtrail_event: null,
-        description: "SSH scanning from 10.20.5.44 to web-prod-03 port 22. 47 connection attempts in 5 minutes. Nessus scanner fingerprint detected.",
+        description: "Scheduled Monday Nessus scan from 10.20.5.44 to web-prod-03 port 22.",
       };
       setSelectedAlert(stage3Alert);
     } else if (stage === 4) {
-      // Stage 4: Trap Alert (External lookalike attack with successful login)
-      const stage4Alert: Alert = {
+      // Stage 4: Trap Alert (lookalike external IP + successful login)
+      const stage4Alert = {
         id: "DEMO-STAGE3",
-        timestamp: "2026-10-05T03:14:00Z",
+        timestamp: "2026-09-28T03:14:00Z",
         source_ip: "185.23.42.77",
-        source_port: 62000,
+        source_port: 48220,
         destination_ip: "10.10.1.10",
         destination_port: 22,
         hostname: "web-prod-03",
-        username: null,
+        username: "deploy",
         asset: "web-prod-03",
         environment: "production",
-        severity: "HIGH",
+        severity: "MEDIUM",
         event_type: "SSH_SCAN",
         process: null,
-        tool: "Splunk",
+        tool: "Nessus",
         aws_region: null,
         cloudtrail_event: null,
-        description: "SSH scanning from external IP 185.23.42.77 to production web-prod-03 port 22. 120 rapid connection attempts followed by a SUCCESSFUL SSH authentication. Resembles scanner activity but originates from unauthorized external IP.",
+        description: "120 rapid connection attempts to port 22 from external IP 185.23.42.77, followed by a successful authentication event at 03:14 UTC.",
       };
       setSelectedAlert(stage4Alert);
     }
   }
 
+  function handleAlertUpdated(updated) {
+    setAlerts((prev) =>
+      prev.map((a) => (a.id === updated.id ? updated : a))
+    );
+    if (selectedAlert && selectedAlert.id === updated.id) {
+      setSelectedAlert(updated);
+    }
+    // Refresh stats
+    getLearningStats().then(setStats).catch(() => {});
+  }
+
   return (
-    <div className="min-h-screen flex flex-col bg-[#06080e] text-white">
+    <div className="min-h-screen bg-[#06080e] text-gray-100 flex flex-col selection:bg-cyan-500/30 selection:text-cyan-200">
+      {/* Top Navbar */}
       <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -167,11 +174,13 @@ export function CommandCenter({ initialTab = "dashboard" }: CommandCenterProps) 
         resetting={resetting}
       />
 
+      {/* Guided 4-Step Interactive Demo Bar */}
       <DemoBar
         onRunStage={handleRunStage}
         activeStage={activeDemoStage}
       />
 
+      {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {activeTab === "dashboard" && (
           <DashboardView
@@ -190,22 +199,21 @@ export function CommandCenter({ initialTab = "dashboard" }: CommandCenterProps) 
           />
         )}
 
-        {activeTab === "memory" && <MemoryBankView />}
+        {activeTab === "memory" && (
+          <MemoryBankView />
+        )}
 
-        {activeTab === "learning" && <LearningView />}
+        {activeTab === "learning" && (
+          <LearningView />
+        )}
       </main>
 
-      {/* Alert Detail Modal */}
+      {/* Slide-over / Modal for Alert Inspection & Analyst Triage */}
       {selectedAlert && (
         <AlertDetailModal
           alert={selectedAlert}
           onClose={() => setSelectedAlert(null)}
-          onAlertUpdated={(updated) => {
-            setAlerts((prev) => prev.map((a) => (a.id === updated.id ? updated : a)));
-            getLearningStats().then((s) => {
-              if (s) setStats(s);
-            }).catch(() => {});
-          }}
+          onAlertUpdated={handleAlertUpdated}
         />
       )}
     </div>

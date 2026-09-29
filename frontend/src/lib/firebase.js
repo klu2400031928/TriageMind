@@ -1,8 +1,7 @@
-import { initializeApp, getApps, getApp, FirebaseApp } from "firebase/app";
+import { initializeApp, getApps, getApp } from "firebase/app";
 import {
   getAuth,
   GoogleAuthProvider,
-  Auth,
   RecaptchaVerifier,
 } from "firebase/auth";
 
@@ -22,9 +21,9 @@ export const isFirebaseConfigured = Boolean(
   firebaseConfig.apiKey.length > 10
 );
 
-let app: FirebaseApp | null = null;
-let authInstance: Auth | null = null;
-let googleProviderInstance: GoogleAuthProvider | null = null;
+let app = null;
+let authInstance = null;
+let googleProviderInstance = null;
 
 if (typeof window !== "undefined" && isFirebaseConfigured) {
   try {
@@ -37,7 +36,7 @@ if (typeof window !== "undefined" && isFirebaseConfigured) {
   }
 }
 
-export const getFirebaseAuth = (): Auth | null => {
+export const getFirebaseAuth = () => {
   if (!authInstance && isFirebaseConfigured) {
     try {
       app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
@@ -49,7 +48,7 @@ export const getFirebaseAuth = (): Auth | null => {
   return authInstance;
 };
 
-export const getGoogleProvider = (): GoogleAuthProvider => {
+export const getGoogleProvider = () => {
   if (!googleProviderInstance) {
     googleProviderInstance = new GoogleAuthProvider();
     googleProviderInstance.setCustomParameters({ prompt: "select_account" });

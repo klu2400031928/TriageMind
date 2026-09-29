@@ -1,8 +1,6 @@
-import { Alert, TriageResult, FeedbackRequest, FeedbackResponse, LearningStats } from "@/types";
-
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
-export async function getHealth(): Promise<{ status: string; hindsight?: any }> {
+export async function getHealth() {
   try {
     const res = await fetch(`${API_BASE}/health`, { cache: "no-store" });
     return await res.json();
@@ -11,19 +9,19 @@ export async function getHealth(): Promise<{ status: string; hindsight?: any }> 
   }
 }
 
-export async function getAlerts(): Promise<{ alerts: Alert[]; total: number }> {
+export async function getAlerts() {
   const res = await fetch(`${API_BASE}/alerts`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to fetch alerts");
   return await res.json();
 }
 
-export async function getAlert(id: string): Promise<{ alert: Alert; triage?: TriageResult }> {
+export async function getAlert(id) {
   const res = await fetch(`${API_BASE}/alerts/${id}`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to fetch alert");
   return await res.json();
 }
 
-export async function triageAlert(alert: Alert, useMemory: boolean = true): Promise<TriageResult> {
+export async function triageAlert(alert, useMemory = true) {
   const res = await fetch(`${API_BASE}/triage`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -33,10 +31,7 @@ export async function triageAlert(alert: Alert, useMemory: boolean = true): Prom
   return await res.json();
 }
 
-export async function submitFeedback(
-  feedback: FeedbackRequest,
-  alertContext?: Record<string, any>
-): Promise<FeedbackResponse> {
+export async function submitFeedback(feedback, alertContext) {
   const res = await fetch(`${API_BASE}/feedback`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -46,7 +41,7 @@ export async function submitFeedback(
   return await res.json();
 }
 
-export async function getRecentMemories(query?: string): Promise<{ memories: any[]; total: number }> {
+export async function getRecentMemories(query) {
   const url = query
     ? `${API_BASE}/memory/recent?query=${encodeURIComponent(query)}`
     : `${API_BASE}/memory/recent`;
@@ -55,13 +50,13 @@ export async function getRecentMemories(query?: string): Promise<{ memories: any
   return await res.json();
 }
 
-export async function getLearningStats(): Promise<LearningStats> {
+export async function getLearningStats() {
   const res = await fetch(`${API_BASE}/learning/stats`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to fetch learning stats");
   return await res.json();
 }
 
-export async function runReflection(query?: string): Promise<{ reflection: string }> {
+export async function runReflection(query) {
   const res = await fetch(`${API_BASE}/learning/reflect`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -71,7 +66,7 @@ export async function runReflection(query?: string): Promise<{ reflection: strin
   return await res.json();
 }
 
-export async function resetDemo(): Promise<any> {
+export async function resetDemo() {
   const res = await fetch(`${API_BASE}/demo/reset`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },

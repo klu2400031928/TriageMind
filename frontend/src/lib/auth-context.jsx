@@ -2,7 +2,6 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 import {
-  User as FirebaseUser,
   onAuthStateChanged,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
@@ -11,7 +10,6 @@ import {
   sendPasswordResetEmail,
   updateProfile,
   signInWithPhoneNumber,
-  ConfirmationResult,
   RecaptchaVerifier,
 } from "firebase/auth";
 import {
@@ -20,44 +18,12 @@ import {
   isFirebaseConfigured,
 } from "./firebase";
 
-export interface AuthUser {
-  uid: string;
-  email: string | null;
-  displayName: string | null;
-  phoneNumber: string | null;
-  photoURL: string | null;
-  providerId: string;
-}
-
-interface AuthContextType {
-  user: AuthUser | null;
-  loading: boolean;
-  isAuthenticated: boolean;
-  isFirebaseConfigured: boolean;
-  signInWithEmail: (email: string, pass: string) => Promise<void>;
-  signUpWithEmail: (name: string, email: string, pass: string) => Promise<void>;
-  signInWithGoogle: () => Promise<void>;
-  setupRecaptcha: (containerId: string) => RecaptchaVerifier;
-  sendPhoneOtp: (
-    phone: string,
-    verifier: RecaptchaVerifier
-  ) => Promise<ConfirmationResult>;
-  confirmPhoneOtp: (
-    confirmationResult: ConfirmationResult,
-    otp: string
-  ) => Promise<void>;
-  resetPassword: (email: string) => Promise<void>;
-  signOutUser: () => Promise<void>;
-  loginAsDemoAnalyst: () => void;
-  getIdToken: () => Promise<string | null>;
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext(undefined);
 
 const LOCAL_STORAGE_KEY = "triagemind_auth_user";
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(null);
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -72,7 +38,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     if (!isFirebaseConfigured) {
-      // If Firebase is not configured, we keep cached demo user or leave null
+      // If Firebase is not configured, keep cached demo user or leave null
       setLoading(false);
       return;
     }
@@ -83,9 +49,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const unsubscribe = onAuthStateChanged(auth, (fbUser: FirebaseUser | null) => {
+    const unsubscribe = onAuthStateChanged(auth, (fbUser) => {
       if (fbUser) {
-        const mappedUser: AuthUser = {
+        const mappedUser = {
           uid: fbUser.uid,
           email: fbUser.email,
           displayName: fbUser.displayName || fbUser.email?.split("@")[0] || "SOC Analyst",
@@ -121,11 +87,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => unsubscribe();
   }, []);
 
-  const signInWithEmail = async (email: string, pass: string) => {
+  const signInWithEmail = async (email, pass) => {
     const auth = getFirebaseAuth();
     if (!auth) throw new Error("Firebase Authentication is not configured.");
     const cred = await signInWithEmailAndPassword(auth, email, pass);
-    const mapped: AuthUser = {
+    const mapped = {
       uid: cred.user.uid,
       email: cred.user.email,
       displayName: cred.user.displayName || cred.user.email?.split("@")[0] || "SOC Analyst",
@@ -137,14 +103,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(mapped));
   };
 
-  const signUpWithEmail = async (name: string, email: string, pass: string) => {
+  const signUpWithEmail = async (name, email, pass) => {
     const auth = getFirebaseAuth();
     if (!auth) throw new Error("Firebase Authentication is not configured.");
     const cred = await createUserWithEmailAndPassword(auth, email, pass);
     if (name.trim()) {
       await updateProfile(cred.user, { displayName: name.trim() });
     }
-    const mapped: AuthUser = {
+    const mapped = {
       uid: cred.user.uid,
       email: cred.user.email,
       displayName: name.trim() || cred.user.email?.split("@")[0] || "SOC Analyst",
@@ -161,7 +127,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!auth) throw new Error("Firebase Authentication is not configured.");
     const provider = getGoogleProvider();
     const cred = await signInWithPopup(auth, provider);
-    const mapped: AuthUser = {
+    const mapped = {
       uid: cred.user.uid,
       email: cred.user.email,
       displayName: cred.user.displayName || "Google Analyst",
@@ -173,7 +139,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(mapped));
   };
 
-  const setupRecaptcha = (containerId: string): RecaptchaVerifier => {
+  const setupRecaptcha = (containerId) => {
     const auth = getFirebaseAuth();
     if (!auth) throw new Error("Firebase Authentication is not configured.");
     if (typeof window === "undefined") {
@@ -196,21 +162,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return verifier;
   };
 
-  const sendPhoneOtp = async (
-    phone: string,
-    verifier: RecaptchaVerifier
-  ): Promise<ConfirmationResult> => {
+  const sendPhoneOtp = async (phone, verifier) => {
     const auth = getFirebaseAuth();
     if (!auth) throw new Error("Firebase Authentication is not configured.");
     return await signInWithPhoneNumber(auth, phone, verifier);
   };
 
-  const confirmPhoneOtp = async (
-    confirmationResult: ConfirmationResult,
-    otp: string
-  ) => {
+  const confirmPhoneOtp = async (confirmationResult, otp) => {
     const cred = await confirmationResult.confirm(otp);
-    const mapped: AuthUser = {
+    const mapped = {
       uid: cred.user.uid,
       email: cred.user.email,
       displayName: cred.user.phoneNumber || "Verified Phone Analyst",
@@ -222,7 +182,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(mapped));
   };
 
-  const resetPassword = async (email: string) => {
+  const resetPassword = async (email) => {
     const auth = getFirebaseAuth();
     if (!auth) throw new Error("Firebase Authentication is not configured.");
     await sendPasswordResetEmail(auth, email);
@@ -244,7 +204,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const loginAsDemoAnalyst = () => {
-    const demoUser: AuthUser = {
+    const demoUser = {
       uid: "demo-analyst-lead",
       email: "priya.nair@triagemind.sec",
       displayName: "Priya Nair",
@@ -256,7 +216,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(demoUser));
   };
 
-  const getIdToken = async (): Promise<string | null> => {
+  const getIdToken = async () => {
     const auth = getFirebaseAuth();
     if (auth && auth.currentUser) {
       return await auth.currentUser.getIdToken();
